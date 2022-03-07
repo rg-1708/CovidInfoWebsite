@@ -2,6 +2,8 @@ package io.RgPortfolio.coronavirustracker.controllers;
 
 import io.RgPortfolio.coronavirustracker.Services.CovidDataService;
 import io.RgPortfolio.coronavirustracker.model.LocationStats;
+import io.RgPortfolio.coronavirustracker.repositories.LocationStatRepo;
+import org.assertj.core.util.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,21 +14,25 @@ import java.util.List;
 @Controller
 public class HomeController {
 
+    private final LocationStatRepo locationStatRepo;
+
     @Autowired
-    CovidDataService covidDataService;
+    public HomeController(LocationStatRepo locationStatRepo) {
+        this.locationStatRepo = locationStatRepo;
+    }
 
     @GetMapping("/")
     public String home(Model model)
     {
-        List<LocationStats> allStats = covidDataService.getStatsList();
-        int totalReportedCases = allStats.stream().
+
+        int totalReportedCases = Lists.newArrayList(locationStatRepo.findAll()).stream().
                 mapToInt(stat -> stat.getLatestTotalCases()).sum();
 
-        int totalNewCases = allStats.stream().
+        int totalNewCases = Lists.newArrayList(locationStatRepo.findAll()).stream().
                 mapToInt(stat -> stat.getDiffFromPreviousDay()).sum();
 
 
-        model.addAttribute("locationStats", covidDataService.getStatsList());
+        model.addAttribute("locationStats", Lists.newArrayList(locationStatRepo.findAll())  );
         model.addAttribute("totalReportedCases", totalReportedCases);
         model.addAttribute("totalNewCases", totalNewCases);
 
